@@ -6,7 +6,7 @@ on:
   # Secret'lar ve kaynaklar hazır olunca aşağıdaki iki satırın başındaki # işaretini kaldırın:
   schedule:
     - cron: '7,22,37,52 * * * *'
-  workflow_dispatch:
+  workflow_dispatch: {inputs: {geriye_saat: {description: 'Deneme - kac saat geriye', required: false, default: ''}}}
 
 concurrency:
   group: scan
@@ -37,4 +37,6 @@ jobs:
           # İsteğe bağlı: yalnızca kural motorunun emin olamadığı haberler için (ücretsiz kota)
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           AI_MODEL_NAME: ${{ secrets.AI_MODEL_NAME }}
+          MAX_ITEM_AGE_HOURS: ${{ inputs.geriye_saat }}
+          IGNORE_SEEN: ${{ inputs.geriye_saat != '' }}
           MIN_CONFIDENCE: ${{ vars.MIN_CONFIDENCE }}

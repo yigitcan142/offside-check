@@ -19,7 +19,6 @@ export const RSS_FEEDS: Array<RssFeedConfig & { verified: boolean }> = [
   { key: 'rss:guardian-football', name: 'The Guardian Football', url: 'https://www.theguardian.com/football/rss', tier: 2, alignment: 'İngiltere / Global', verified: true },
 
   // Türkiye (ADAY adresler — check:sources ile doğrulayın)
-  { key: 'rss:fanatik', name: 'Fanatik', url: 'https://www.fanatik.com.tr/rss/anasayfa', tier: 2, alignment: 'Haber Masası', verified: false },
   { key: 'rss:fotomac', name: 'Fotomaç', url: 'https://www.fotomac.com.tr/rss/anasayfa.xml', tier: 2, alignment: 'Haber Masası', verified: false },
   { key: 'rss:ntvspor', name: 'NTV Spor', url: 'https://www.ntvspor.net/rss', tier: 2, alignment: 'Haber Masası', verified: false },
   { key: 'rss:sabah-spor', name: 'Sabah Spor', url: 'https://www.sabah.com.tr/rss/spor.xml', tier: 2, alignment: 'Haber Masası', verified: false },
@@ -33,7 +32,11 @@ export const RSS_FEEDS: Array<RssFeedConfig & { verified: boolean }> = [
  * doğrulayamadığım için uydurma kanal koymadım. Örnek:
  *   { channel: 'kanal_adi', name: 'Görünen Ad', tier: 1, alignment: 'Süper Lig' },
  */
-export const TELEGRAM_CHANNELS: TelegramChannelConfig[] = [];
+export const TELEGRAM_CHANNELS: TelegramChannelConfig[] = [
+  // Doğrulandı (3 Kasım 2026): herkese açık önizleme var, aktif. Hayran derlemesi; haberleri kaynağıyla
+  // paylaşır ama resmi/muhabir hesabı değildir, bu yüzden düşük güven seviyesi (3).
+  { channel: 'galatasarayorg', name: 'GS Haber (Telegram)', tier: 3, alignment: 'Galatasaray' }
+];
 
 export function buildSources(env: NodeJS.ProcessEnv = process.env): SourceAdapter[] {
   const sources: SourceAdapter[] = [

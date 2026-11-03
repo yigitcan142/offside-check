@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RssSource } from '../src/sources/rss.js';
-import { parseTelegramPage, telegramSourceInfo, TelegramSource } from '../src/sources/telegram.js';
+import { isSpam, parseTelegramPage, telegramSourceInfo, TelegramSource } from '../src/sources/telegram.js';
 import { NitterSource } from '../src/sources/x.js';
 
 const RSS_XML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -79,4 +79,11 @@ test('Nitter (isteğe bağlı): ilk çalışan sunucudan okur, kimliği durum nu
   assert.equal(calls.length, 2);
   assert.equal(items[0]!.id, '1234567890123');
   assert.equal(items[0]!.url, 'https://x.com/FabrizioRomano/status/1234567890123');
+});
+
+test('Telegram: bahis/reklam mesajları ayıklanır, haberler kalır', () => {
+  assert.equal(isSpam('Bahisbey ile günlük maçlarda bonus kazan'), true);
+  assert.equal(isSpam('Kavbet Giriş 🔥 Turnuvalar Bonuslar'), true);
+  assert.equal(isSpam('Fenerbahçe, Ismail Yüksek ile anlaştı!'), false);
+  assert.equal(isSpam('Galatasaray yüzde 30 oranında indirim yaptı'), false);
 });

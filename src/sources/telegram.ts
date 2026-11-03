@@ -21,6 +21,10 @@ export function telegramSourceInfo(config: TelegramChannelConfig): SourceInfo {
   };
 }
 
+/** Yönlendirilen bahis/reklam mesajlarını ayıklar (haber değildir). */
+const SPAM = /bahis|bonus|casino|freespin|çevrimsiz|kupon|güncel giriş|vip kanal|sweet bonanza/i;
+export const isSpam = (text: string): boolean => SPAM.test(text);
+
 /** Herkese açık kanal önizlemesini (https://t.me/s/<kanal>) çözer. */
 export function parseTelegramPage(html: string, info: SourceInfo): RawItem[] {
   const $ = cheerio.load(html);
@@ -34,7 +38,7 @@ export function parseTelegramPage(html: string, info: SourceInfo): RawItem[] {
     if (textElement.length === 0) return;
     textElement.find('br').replaceWith(' ');
     const text = textElement.text().replace(/\s+/g, ' ').trim();
-    if (!text) return;
+    if (!text || isSpam(text)) return;
 
     const datetime = $(element).find('.tgme_widget_message_date time').first().attr('datetime');
     items.push({

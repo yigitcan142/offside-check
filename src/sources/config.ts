@@ -20,7 +20,6 @@ export const RSS_FEEDS: Array<RssFeedConfig & { verified: boolean }> = [
 
   // Türkiye (ADAY adresler — check:sources ile doğrulayın)
   { key: 'rss:fotomac', name: 'Fotomaç', url: 'https://www.fotomac.com.tr/rss/anasayfa.xml', tier: 2, alignment: 'Haber Masası', verified: false },
-  { key: 'rss:ntvspor', name: 'NTV Spor', url: 'https://www.ntvspor.net/rss', tier: 2, alignment: 'Haber Masası', verified: false },
   { key: 'rss:sabah-spor', name: 'Sabah Spor', url: 'https://www.sabah.com.tr/rss/spor.xml', tier: 2, alignment: 'Haber Masası', verified: false },
   { key: 'rss:hurriyet-spor', name: 'Hürriyet Spor', url: 'https://www.hurriyet.com.tr/rss/spor', tier: 2, alignment: 'Haber Masası', verified: false },
   { key: 'rss:aspor', name: 'A Spor', url: 'https://www.aspor.com.tr/rss/anasayfa.xml', tier: 2, alignment: 'Haber Masası', verified: false }

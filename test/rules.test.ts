@@ -115,3 +115,22 @@ test('tamamı büyük harf manşet belirsiz döner', () => {
 test('extractNames: kısaltmalar, gün adları ve kulüpler isim sayılmaz', () => {
   assert.deepEqual(extractNames('TFF Pazartesi günü Galatasaray ile Mauro Icardi’yi açıkladı'), ['Mauro Icardi']);
 });
+
+test('gerçek Telegram paylaşımı: kaynak satırı ve uyruk sıfatı isim sayılmaz, sözleşme uzatma yakalanır', () => {
+  const a = news(
+    '⚽️ Inter, Federico Dimarco’nun sözleşmesini Haziran 2028’e kadar uzatma opsiyonunu devreye soktu.\n\n▪️ İtalyan kulübü, yıldız futbolcuyla daha uzun süreli yeni bir sözleşme için görüşmelere başlayacak.\n\n🔗 Fabrizio Romano',
+    3
+  );
+  assert.equal(a.category, 'CONTRACT_EXTENSION');
+  assert.equal(a.subjectName, 'Federico Dimarco');
+  assert.equal(a.stage, 'DONE');
+});
+
+test('gerçek Telegram paylaşımı: "kadroda yer almadı" kadro durumu sayılır', () => {
+  const a = news(
+    '⚽️ Real Madrid, Şampiyonlar Ligi’nde AEK ile oynayacağı maçın kadrosunu açıkladı.\n\n❌ Son antrenmanda bireysel çalışan Arda Güler, kadroda yer almadı.',
+    3
+  );
+  assert.equal(a.category, 'SQUAD_STATUS');
+  assert.equal(a.subjectName, 'Arda Güler');
+});

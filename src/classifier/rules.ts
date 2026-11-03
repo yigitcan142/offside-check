@@ -35,7 +35,7 @@ export function fold(input: string): string {
 const SUSPENSION_RE =
   /pfdk|disipline sevk|men cezas|(\d+|bir|iki|uc|dort|bes|alti|yedi)\s+mac(lik)?\s+(ceza|men)|cezali duruma|ceza aldi|cezalandirildi|\bsuspended\b|\bbanned\b|\bsuspension\b/;
 const CONTRACT_RE =
-  /sozlesme(si|sini|sine)?\s+(uzat|yenile)|sozlesmesini\s+(uzat|yenile)|yeni sozlesme|ek sozlesme|extends? (his |her )?contract|new contract|contract (extension|renewal)|\brenews?\b/;
+  /sozlesme\w*\s+(?:\S+\s+){0,6}?(uzat|yenile)|uzatma opsiyon|opsiyonunu\s+(devreye|kullan)|yeni sozlesme|ek sozlesme|extends? (his |her )?contract|new contract|contract (extension|renewal)|\brenews?\b/;
 const INJURY_RE =
   /sakatl|sakat\b|sakatlan|ameliyat|zedelen|kirik|yirtik|cikik|sezonu kapatti|injur|ruled out|surgery|hamstring|\bacl\b/;
 const MANAGER_ROLE_RE = /teknik direktor|\bhoca\b|\bhocasi|head coach|\bmanager\b|\bcoach\b/;
@@ -44,7 +44,7 @@ const MANAGER_CHANGE_RE =
 const TRANSFER_RE =
   /transfer|kadrosuna kat|bonservis|kiralik|kirala|imza|anlas|mutabik|teklif|here we go|\bloan\b|medical|\bsigns?\b|signing|\bfee\b|bedel|\bbid\b|\bdeal\b|agreement/;
 const SQUAD_RE =
-  /kadro disi|kadrodan cikar|kadroya\s+(dondu|girdi|alindi)|kadroda yer almayacak|idmana\s+(cikti|dondu)|antrenmana\s+(cikti|dondu)|takimla\s+calis|gozden cikar|back in training|returns? to training/;
+  /kadro disi|kadrodan cikar|kadroya\s+(dondu|girdi|alindi)|kadroda yer (almayacak|almadi|alamadi)|kadroya alinmadi|kadro disi birak|idmana\s+(cikti|dondu)|antrenmana\s+(cikti|dondu)|takimla\s+calis|gozden cikar|back in training|returns? to training/;
 
 function detectCategory(t: string): AICategory | null {
   if (SUSPENSION_RE.test(t)) return 'SUSPENSION';
@@ -66,7 +66,7 @@ const OFFICIAL_TIER0_RE = /\b(acikladi|duyurdu|bildirdi)\b/;
 const ADVANCED_RE =
   /(sona|anlasmaya|imzaya|transfere)\s+(cok\s+)?(yakin|yaklasti|geldi)|prensipte|son asama|masaya oturdu|teklif\s+(yapti|etti|sundu|hazirladi|gonderdi)|resmi teklif|kapida|advanced talks|agreement in principle|verbal agreement|close to (a )?deal|nearing|\bbid\b|\boffer\b/;
 const DONE_RE =
-  /anlasti|anlasmaya vardi|anlasma\s+saglandi|anlasmaya varildi|imza(yi)?\s+atti|imzaladi|imzalar atildi|transferi\s+tamamlandi|tamamlandi|mutabik kaldi|saglik kontrolunden gecti|kadrosuna kat|here we go|\bagreed\b|agreement reached|medical (done|completed)|\bsigned\b|\bsigns\b|completed/;
+  /anlasti|anlasmaya vardi|anlasma\s+saglandi|anlasmaya varildi|imza(yi)?\s+atti|devreye soktu|opsiyonunu\s+kullandi|imzaladi|imzalar atildi|transferi\s+tamamlandi|tamamlandi|mutabik kaldi|saglik kontrolunden gecti|kadrosuna kat|here we go|\bagreed\b|agreement reached|medical (done|completed)|\bsigned\b|\bsigns\b|completed/;
 const INTEREST_RE =
   /ilgilen|gundemde|istiyor|istedi|takipte|radar|listesinde|harekete gec|dusunuyor|hedef|interested|target|eyeing|monitoring/;
 const HEDGE_RE =
@@ -217,6 +217,10 @@ const STOP_WORDS = new Set(
     'breaking', 'official', 'exclusive', 'here', 'we', 'go', 'the', 'new', 'club', 'deal', 'done', 'medical', 'loan',
     'premier', 'league', 'champions', 'europa', 'cup', 'world', 'sources', 'agreement', 'contract', 'transfer',
     'kulis', 'iddia', 'soylenti', 'ozel', 'exclusive', 'gundem', 'gelisme', 'canli', 'tamam', 'tamamlandi',
+    // uyruk / sıfat
+    'italyan', 'italyali', 'alman', 'almanyali', 'ispanyol', 'ispanyali', 'fransiz', 'fransali', 'ingiliz', 'ingiltere',
+    'portekiz', 'portekizli', 'brezilyali', 'arjantinli', 'hollandali', 'belcikali', 'turkiyeli', 'yerli', 'yabanci',
+    'ozellikle', 'ayrica', 'ancak', 'bununla', 'bu', 'bir', 'her', 'tum', 'butun',
     // genel ek
     've', 'ile', 'icin', 'ama', 'fakat', 'ancak'
   ]
@@ -329,8 +333,16 @@ function buildStatus(category: AICategory, info: StageInfo): string {
 // Ana fonksiyon
 // ---------------------------------------------------------------------------
 
+/** Paylaşımın sonundaki kaynak/kredi satırını ("🔗 Fabrizio Romano", "Kaynak: ...") atar; kişi adı sanılmasın. */
+export function stripAttribution(text: string): string {
+  return text
+    .replace(/\s*(?:🔗|📎|🔎|✍️|📰)[^\n]*$/gmu, '')
+    .replace(/\n\s*(?:kaynak|source|via)\s*:[^\n]*$/gimu, '')
+    .trim();
+}
+
 export function classifyByRules(text: string, ctx: { tier: number }): RuleVerdict {
-  const original = text.replace(/\s+/g, ' ').trim();
+  const original = stripAttribution(text).replace(/\s+/g, ' ').trim();
   if (original.length < 15) return { kind: 'noise' };
 
   const t = fold(original);

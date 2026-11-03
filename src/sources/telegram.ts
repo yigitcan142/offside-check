@@ -22,7 +22,7 @@ export function telegramSourceInfo(config: TelegramChannelConfig): SourceInfo {
 }
 
 /** Yönlendirilen bahis/reklam mesajlarını ayıklar (haber değildir). */
-const SPAM = /bahis|bonus|casino|freespin|çevrimsiz|kupon|güncel giriş|vip kanal|sweet bonanza/i;
+const SPAM = /bahis|bonus|casino|freespin|çevrimsiz|kupon|güncel giriş|vip kanal|sweet bonanza|1xbet|betboo|\bbet\b|\bvpn\b/i;
 export const isSpam = (text: string): boolean => SPAM.test(text);
 
 /** Herkese açık kanal önizlemesini (https://t.me/s/<kanal>) çözer. */

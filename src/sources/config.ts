@@ -35,7 +35,11 @@ export const RSS_FEEDS: Array<RssFeedConfig & { verified: boolean }> = [
 export const TELEGRAM_CHANNELS: TelegramChannelConfig[] = [
   // Doğrulandı (3 Kasım 2026): herkese açık önizleme var, aktif. Hayran derlemesi; haberleri kaynağıyla
   // paylaşır ama resmi/muhabir hesabı değildir, bu yüzden düşük güven seviyesi (3).
-  { channel: 'galatasarayorg', name: 'GS Haber (Telegram)', tier: 3, alignment: 'Galatasaray' }
+  { channel: 'galatasarayorg', name: 'GS Haber (Telegram)', tier: 3, alignment: 'Galatasaray' },
+  // 3 Kasım 2026'da doğrulandı: aktif, haberleri kaynak adıyla paylaşıyor (hayran/derleme kanalları).
+  { channel: 'haber_transfer', name: 'Transfer Haberleri (Telegram)', tier: 3, alignment: 'Genel' },
+  { channel: 'besiktas_transfer', name: 'Beşiktaş Haberleri (Telegram)', tier: 3, alignment: 'Beşiktaş' },
+  { channel: 'fenerbahceq', name: 'Fenerbahçe Haberleri (Telegram)', tier: 3, alignment: 'Fenerbahçe' }
 ];
 
 export function buildSources(env: NodeJS.ProcessEnv = process.env): SourceAdapter[] {

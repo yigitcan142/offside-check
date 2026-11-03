@@ -134,3 +134,12 @@ test('gerçek Telegram paylaşımı: "kadroda yer almadı" kadro durumu sayılı
   assert.equal(a.category, 'SQUAD_STATUS');
   assert.equal(a.subjectName, 'Arda Güler');
 });
+
+test('teknik direktör adayı oyuncu sayılmaz', () => {
+  const r = classifyByRules('Fenerbahçe, Teknik Direktör Emre Belözoğlu ile görüşmelere başladı.', { tier: 3 } as any);
+  assert.equal(r.kind, 'news');
+  if (r.kind === 'news') {
+    assert.equal(r.analysis.category, 'MANAGER_STAFF');
+    assert.equal(r.analysis.subjectRole, 'Teknik Direktör');
+  }
+});

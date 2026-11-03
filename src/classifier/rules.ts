@@ -40,7 +40,7 @@ const INJURY_RE =
   /sakatl|sakat\b|sakatlan|ameliyat|zedelen|kirik|yirtik|cikik|sezonu kapatti|injur|ruled out|surgery|hamstring|\bacl\b/;
 const MANAGER_ROLE_RE = /teknik direktor|\bhoca\b|\bhocasi|head coach|\bmanager\b|\bcoach\b/;
 const MANAGER_CHANGE_RE =
-  /atan|getiril|anlas|ayril|gorevden|istifa|yollar|sacked|appointed|appoint|replace|new (head )?coach|new manager|parted ways/;
+  /atan|getiril|anlas|gorusme|favori|\badayi|ayril|gorevden|istifa|yollar|sacked|appointed|appoint|replace|new (head )?coach|new manager|parted ways/;
 const TRANSFER_RE =
   /transfer|kadrosuna kat|bonservis|kiralik|kirala|imza|anlas|mutabik|teklif|here we go|\bloan\b|medical|\bsigns?\b|signing|\bfee\b|bedel|\bbid\b|\bdeal\b|agreement/;
 const SQUAD_RE =
@@ -238,7 +238,7 @@ for (const club of CLUBS) {
 const KEYWORD_TOKEN_RE =
   /^(sakat|transfer|ameliyat|ceza|imza|anlasma|teklif|sozlesme|bonservis|kiralik|kadro|idman|antrenman|hoca|teknik|injur|suspend)/;
 
-const NAME_RE = /(?<![\p{L}\p{N}])(\p{Lu}[\p{L}\-]*(?:['’]\p{L}*)?)(?:\s+\p{Lu}[\p{L}\-]*(?:['’]\p{L}*)?){0,2}/gu;
+const NAME_RE = /(?<![\p{L}\p{N}])(\p{Lu}[\p{L}\-]*(?:['’]\p{L}*)?)(?:\s+\p{Lu}[\p{L}\-]*(?:['’]\p{L}*)?){0,4}/gu;
 
 function isDroppedToken(token: string): boolean {
   const folded = fold(token);
@@ -350,7 +350,7 @@ export function classifyByRules(text: string, ctx: { tier: number }): RuleVerdic
 
   const clubHits = findClubs(t);
   // "X, Y'yi istiyor" gibi transfer sözcüğü geçmeyen ilgi haberleri de transfer sayılır.
-  const category = detectCategory(t) ?? (clubHits.length > 0 && INTEREST_RE.test(t) ? 'TRANSFER' : null);
+  let category = detectCategory(t) ?? (clubHits.length > 0 && INTEREST_RE.test(t) ? 'TRANSFER' : null);
   if (!category) return { kind: 'noise' };
 
   const letters = original.match(/\p{L}/gu) ?? [];
@@ -359,8 +359,14 @@ export function classifyByRules(text: string, ctx: { tier: number }): RuleVerdic
     return { kind: 'ambiguous', reason: 'allcaps' };
   }
 
-  const isDeal = category === 'TRANSFER' || category === 'CONTRACT_EXTENSION';
   const names = extractNames(original);
+  // Unvan isme bitişikse ("Teknik Direktör Emre Belözoğlu ile…") kişi oyuncu değil hoca adayıdır.
+  if (category === 'TRANSFER' && names.length === 1) {
+    const n = fold(names[0]!).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const titled = new RegExp(`(teknik direktor|head coach|manager|hoca)\\w*\\s+(?:\\S+\\s+){0,1}${n}|${n}\\s+(?:\\S+\\s+){0,1}(teknik direktor|head coach|hocalik)`);
+    if (titled.test(t)) category = 'MANAGER_STAFF';
+  }
+  const isDeal = category === 'TRANSFER' || category === 'CONTRACT_EXTENSION';
   const clubs = assignClubs(clubHits, t, isDeal);
   const needsClub = isDeal || category === 'MANAGER_STAFF';
 

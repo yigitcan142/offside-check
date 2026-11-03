@@ -27,6 +27,8 @@ export interface PipelineConfig {
   shortStoryWindowMs: number;
   /** Bu süre sonunda doğrulanmayan "kesin" iddialar yanlış sayılır. */
   staleAfterMs: number;
+  /** Geriye dönük tarama: "görüldü" kaydını yok say, yayınlar arasında kısa bekle. */
+  ignoreSeen: boolean;
 }
 
 export function configFromEnv(env: NodeJS.ProcessEnv = process.env): PipelineConfig {
@@ -41,7 +43,8 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): PipelineCon
     maxItemAgeMs: num(env.MAX_ITEM_AGE_HOURS, 3) * HOUR_MS,
     longStoryWindowMs: num(env.STALE_DAYS, 14) * DAY_MS,
     shortStoryWindowMs: num(env.STORY_WINDOW_HOURS, 48) * HOUR_MS,
-    staleAfterMs: num(env.STALE_DAYS, 14) * DAY_MS
+    staleAfterMs: num(env.STALE_DAYS, 14) * DAY_MS,
+    ignoreSeen: (env.IGNORE_SEEN ?? '').trim().toLowerCase() === 'true'
   };
 }
 
@@ -318,7 +321,9 @@ export async function runScan(deps: PipelineDeps): Promise<ScanSummary> {
     summary.fresh += fresh.length;
     if (fresh.length === 0) continue;
 
-    const unseenIds = await store.filterUnseen(fresh.map((item) => item.id));
+    const unseenIds = config.ignoreSeen
+      ? new Set(fresh.map((item) => item.id))
+      : await store.filterUnseen(fresh.map((item) => item.id));
     const todo = fresh.filter((item) => unseenIds.has(item.id));
     summary.unseen += todo.length;
     if (todo.length === 0) continue;
@@ -404,6 +409,8 @@ export async function runScan(deps: PipelineDeps): Promise<ScanSummary> {
           story.telegramMessageId = await publisher.send(text);
           story.published = true;
           summary.published += 1;
+          // Telegram'ın dakikalık mesaj sınırına takılmamak için geriye dönük modda yavaşla.
+          if (config.ignoreSeen) await new Promise((resolve) => setTimeout(resolve, 3000));
         }
       } else if (upgraded.has(story.storyKey)) {
         const id = await publisher.send(text, { replyToMessageId: story.telegramMessageId });

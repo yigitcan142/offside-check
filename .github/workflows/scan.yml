@@ -4,8 +4,8 @@ name: scan
 # zamanlanmış işleri geciktirebilir. Zamanlama garanti değildir (birkaç dakika gecikme/atlama olabilir).
 on:
   # Secret'lar ve kaynaklar hazır olunca aşağıdaki iki satırın başındaki # işaretini kaldırın:
-  # schedule:
-  #   - cron: '7,22,37,52 * * * *'
+  schedule:
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 
 concurrency:
@@ -28,7 +28,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - { run: 'echo "len=${#SK} prefix=${SK:0:10} url=${SU}"', env: { SK: '${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}', SU: '${{ secrets.SUPABASE_URL }}' } }
       - run: npm run scan
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

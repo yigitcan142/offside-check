@@ -15,7 +15,7 @@ async function telegramRequest(token: string, method: string, body: Record<strin
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(20_000)
-  });
+  }).catch((error: any) => { const c = error?.cause; throw new Error(`Telegram ${method} network error: ${error?.message} (${c?.code ?? ''} ${c?.message ?? ''})`); });
 
   const text = await response.text();
   let payload: { ok?: boolean; result?: any; description?: string } = {};
@@ -40,8 +40,8 @@ const stripTags = (html: string) =>
     .replace(/&amp;/g, '&');
 
 export function createTelegramPublisher(env: NodeJS.ProcessEnv = process.env): Publisher {
-  const token = env.TELEGRAM_BOT_TOKEN;
-  const chatId = env.TELEGRAM_CHAT_ID;
+  const token = env.TELEGRAM_BOT_TOKEN?.trim();
+  const chatId = env.TELEGRAM_CHAT_ID?.trim();
   if (!token || !chatId) {
     throw new Error('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not defined.');
   }

@@ -1,0 +1,41 @@
+name: scan
+
+# Her ~15 dakikada bir tek seferlik tarama. Dakikalar bilerek :00'dan kaçınır; GitHub saat başlarında
+# zamanlanmış işleri geciktirebilir. Zamanlama garanti değildir (birkaç dakika gecikme/atlama olabilir).
+on:
+  # Secret'lar ve kaynaklar hazır olunca aşağıdaki iki satırın başındaki # işaretini kaldırın:
+  # schedule:
+  #   - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run scan
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # İsteğe bağlı: yalnızca kural motorunun emin olamadığı haberler için (ücretsiz kota)
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AI_MODEL_NAME: ${{ secrets.AI_MODEL_NAME }}
+          MIN_CONFIDENCE: ${{ vars.MIN_CONFIDENCE }}

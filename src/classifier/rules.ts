@@ -38,6 +38,8 @@ const CONTRACT_RE =
   /sozlesme\w*\s+(?:\S+\s+){0,6}?(uzat|yenile)|uzatma opsiyon|opsiyonunu\s+(devreye|kullan)|yeni sozlesme|ek sozlesme|extends? (his |her )?contract|new contract|contract (extension|renewal)|\brenews?\b/;
 const INJURY_RE =
   /sakatl|sakat\b|sakatlan|ameliyat|zedelen|kirik|yirtik|cikik|sezonu kapatti|injur|ruled out|surgery|hamstring|\bacl\b/;
+// Röportaj / alıntı paylaşımları haber değildir: 🗣 işareti, "X şunu söyledi:" kalıbı, tırnaklı konuşma.
+const QUOTE_RE = /🗣|(^|\n)\s*(“|''|")[^\n]{20,}|\bs(ö|o)yledi\s*:/u;
 const MANAGER_ROLE_RE = /teknik direktor|\bhoca\b|\bhocasi|head coach|\bmanager\b|\bcoach\b/;
 const MANAGER_CHANGE_RE =
   /atan|getiril|anlas|gorusme|favori|\badayi|ayril|gorevden|istifa|yollar|sacked|appointed|appoint|replace|new (head )?coach|new manager|parted ways/;
@@ -349,7 +351,7 @@ export function classifyByRules(text: string, ctx: { tier: number }): RuleVerdic
   if (original.length < 15) return { kind: 'noise' };
 
   const t = fold(original);
-  if (original.includes('?') || OPINION_RE.test(t)) return { kind: 'noise' };
+  if (original.includes('?') || OPINION_RE.test(t) || QUOTE_RE.test(original)) return { kind: 'noise' };
 
   const clubHits = findClubs(t);
   // "X, Y'yi istiyor" gibi transfer sözcüğü geçmeyen ilgi haberleri de transfer sayılır.

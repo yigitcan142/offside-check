@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { configFromEnv, runScan } from '../src/pipeline.js';
+import { applyKnownCoach, configFromEnv, runScan } from '../src/pipeline.js';
 import { MemoryStore } from '../src/store.js';
 import { classifyItems } from '../src/classifier/index.js';
 import type { Publisher } from '../src/publisher.js';
@@ -206,4 +206,13 @@ test('Gemini kapalıyken belirsiz öğeler haber sayılmaz; açıkken bütçe a�
   assert.equal(on.filter((item) => item.status === 'classified').length, 10);
   assert.equal(on.filter((item) => item.status === 'deferred').length, 2);
   assert.equal(on[0]!.analysis?.subjectName, 'Mauro Icardi');
+});
+
+test('daha önce teknik direktör olarak haber olan kişi "Oyuncu" etiketi almaz', () => {
+  const base: any = { is_news: true, category: 'TRANSFER', isActionable: true, confidenceScore: 0, subjectName: 'Emre Belözoğlu', subjectRole: 'Oyuncu', toClub: 'Kasımpaşa' };
+  const out = applyKnownCoach(base, new Set(['emre belozoglu']));
+  assert.equal(out.category, 'MANAGER_STAFF');
+  assert.equal(out.subjectRole, 'Teknik Direktör');
+  const other = applyKnownCoach({ ...base, subjectName: 'Arda Güler' }, new Set(['emre belozoglu']));
+  assert.equal(other.category, 'TRANSFER');
 });

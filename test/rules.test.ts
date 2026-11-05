@@ -148,3 +148,8 @@ test('"Devamı" ve "Italiano" kişi adı sayılmaz', () => {
   assert.deepEqual(extractNames('Devamı Beşiktaş ayrılık anlaşması sağlandı'), []);
   assert.deepEqual(extractNames('Italiano Beşiktaş için söylenti çıktı'), []);
 });
+
+test('röportaj alıntıları haber sayılmaz', () => {
+  const v = classifyByRules("🗣️ Fenerbahçe Teknik Sorumlusu Dirk Kuyt:\n\n''Bu kulübü seviyorum, Fenerbahçe'de kalmak istiyorum ve transfer konuşmuyorum.''", { tier: 3 });
+  assert.equal(v.kind, 'noise');
+});

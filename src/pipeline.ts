@@ -94,6 +94,17 @@ const defaultStage = (analysis: AIResult): Stage => analysis.stage ?? (isDeal(an
 const isClaim = (source: StorySource) =>
   !source.cancelled && (source.stage === 'ADVANCED' || source.stage === 'DONE');
 
+/**
+ * Bir kişi daha önce teknik direktör olarak haber olduysa, onun hakkındaki sonraki transfer/kadro
+ * haberleri de teknik heyet haberidir ("Oyuncu" diye etiketlenmez).
+ */
+export function applyKnownCoach(analysis: AIResult, coachSlugs: Set<string>): AIResult {
+  const key = slug(analysis.subjectName ?? '');
+  if (!key || !coachSlugs.has(key)) return analysis;
+  const convert = analysis.category === 'TRANSFER' || analysis.category === 'SQUAD_STATUS';
+  return { ...analysis, subjectRole: 'Teknik Direktör', category: convert ? 'MANAGER_STAFF' : analysis.category };
+}
+
 export function findMatchingStory(
   stories: StoryRecord[],
   analysis: AIResult,
@@ -351,7 +362,12 @@ export async function runScan(deps: PipelineDeps): Promise<ScanSummary> {
   const upgraded = new Set<string>();
   const reportQueue: Array<{ item: RawItem; analysis: AIResult; story: StoryRecord }> = [];
 
-  for (const { item, analysis } of newsItems) {
+  const coachSlugs = new Set(
+    stories.filter((story) => story.category === 'MANAGER_STAFF').map((story) => slug(story.subjectName))
+  );
+  for (const { item, analysis: rawAnalysis } of newsItems) {
+    const analysis = applyKnownCoach(rawAnalysis, coachSlugs);
+    if (analysis.category === 'MANAGER_STAFF') coachSlugs.add(slug(analysis.subjectName ?? ''));
     const match = findMatchingStory(stories, analysis, nowMs, config);
     const result = applyItem(match, item, analysis, nowIso, nowMs, tracker);
     if (!match) stories.push(result.story);

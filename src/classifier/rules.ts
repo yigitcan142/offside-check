@@ -221,6 +221,9 @@ const STOP_WORDS = new Set(
     'italyan', 'italyali', 'alman', 'almanyali', 'ispanyol', 'ispanyali', 'fransiz', 'fransali', 'ingiliz', 'ingiltere',
     'portekiz', 'portekizli', 'brezilyali', 'arjantinli', 'hollandali', 'belcikali', 'turkiyeli', 'yerli', 'yabanci',
     'ozellikle', 'ayrica', 'ancak', 'bununla', 'bu', 'bir', 'her', 'tum', 'butun',
+    // site / bağlantı artıkları ve yabancı dildeki uyruk sıfatları
+    'devami', 'devamini', 'devamina', 'detay', 'detaylar', 'tiklayin', 'oku', 'incele', 'galeri', 'video', 'foto', 'fotograf',
+    'italiano', 'espanol', 'deutsch', 'francais', 'portugues', 'english',
     // genel ek
     've', 'ile', 'icin', 'ama', 'fakat', 'ancak'
   ]

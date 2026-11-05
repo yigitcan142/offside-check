@@ -143,3 +143,8 @@ test('teknik direktör adayı oyuncu sayılmaz', () => {
     assert.equal(r.analysis.subjectRole, 'Teknik Direktör');
   }
 });
+
+test('"Devamı" ve "Italiano" kişi adı sayılmaz', () => {
+  assert.deepEqual(extractNames('Devamı Beşiktaş ayrılık anlaşması sağlandı'), []);
+  assert.deepEqual(extractNames('Italiano Beşiktaş için söylenti çıktı'), []);
+});

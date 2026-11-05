@@ -7,6 +7,12 @@ export function escapeHtml(value: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
+/** Sayısal skoru, "kesin bilgi" izlenimi vermeyen bir düzeye çevirir. */
+export function confidenceLabel(score: number, sourceCount: number): string {
+  const level = score >= 70 ? '🟢 Yüksek' : score >= 45 ? '🟡 Orta' : score >= 25 ? '🟠 Düşük' : '⚪ Söylenti';
+  return `${level} · ${sourceCount} kaynak`;
+}
+
 export function formatTelegramHtml(analysis: any, sources: Array<any>): string {
   const { category, subjectName, subjectRole, fromClub, toClub, primaryClub, statusDescription, confidenceScore, summaryTr } = analysis;
 
@@ -30,7 +36,7 @@ export function formatTelegramHtml(analysis: any, sources: Array<any>): string {
                     subjectRole === 'Yönetici' ? 'Yönetici' : 'Oyuncu';
   const name = escapeHtml(subjectName);
   const status = escapeHtml(statusDescription || summaryTr);
-  const score = escapeHtml(confidenceScore);
+  const score = escapeHtml(confidenceLabel(Number(confidenceScore) || 0, sources.length));
 
   if (category === 'TRANSFER' || category === 'CONTRACT_EXTENSION') {
     let clubLine = '';
@@ -45,7 +51,7 @@ export function formatTelegramHtml(analysis: any, sources: Array<any>): string {
     }
 
     const heading = category === 'CONTRACT_EXTENSION' ? 'SÖZLEŞME' : 'TRANSFER';
-    return `<b>${heading} | Güven: %${score}</b>\n` +
+    return `<b>${heading} | Güven: ${score}</b>\n` +
            `• <b>${roleLabel}:</b> ${name}\n` +
            `${clubLine}` +
            `• <b>Durum:</b> ${status}\n` +
@@ -63,7 +69,7 @@ export function formatTelegramHtml(analysis: any, sources: Array<any>): string {
   const title = categoryTitles[category] || 'GELİŞME';
   const clubLine = clubName ? `• <b>Kulüp:</b> ${escapeHtml(clubName)}\n` : '• <b>Kulüp:</b> Belirtilmedi\n';
 
-  return `<b>${title} | Güven: %${score}</b>\n` +
+  return `<b>${title} | Güven: ${score}</b>\n` +
          `• <b>${roleLabel}:</b> ${name}\n` +
          `${clubLine}` +
          `• <b>Gelişme:</b> ${status}\n` +
